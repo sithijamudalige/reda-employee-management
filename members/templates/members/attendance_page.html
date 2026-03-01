@@ -1,0 +1,365 @@
+<!-- templates/members/attendance_page.html -->
+{% extends 'base.html' %}
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<h2 class="mb-4">Attendance Management</h2>
+
+<!-- Month Selection and Global Actions -->
+<div class="card mb-4">
+  <div class="card-body">
+    <form method="post" id="attendanceForm">
+      {% csrf_token %}
+      <div class="row g-3 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label"><strong>Select Month:</strong></label>
+          <input type="month" name="attendance_month" id="attendanceMonth" 
+                 class="form-control" value="{{ selected_month }}" required>
+        </div>
+        
+        <div class="col-md-3">
+          <label class="form-label"><strong>Global Service Days Count:</strong></label>
+          <input type="number" name="global_service_days" id="globalServiceDays" 
+                 class="form-control" placeholder="Apply to all" min="0" max="31">
+        </div>
+        
+        <div class="col-md-4">
+          <label class="form-label"><strong>Global Comment:</strong></label>
+          <input type="text" name="global_comment" id="globalComment" 
+                 class="form-control" placeholder="Apply to all members">
+        </div>
+        
+        <div class="col-md-2">
+          <button type="button" class="btn btn-info w-100" onclick="applyGlobalValues()">
+            Apply to All
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+  <div class="card-body">
+    <h5>Filters</h5>
+    <div class="row g-2 align-items-center">
+      <div class="col-md-3">
+        <input type="text" id="filterSearch" class="form-control" 
+               placeholder="Search by Name, ETF, NIC..." onkeyup="filterTable()">
+      </div>
+      <div class="col-md-2">
+        <input type="text" id="filterProvince" class="form-control" 
+               placeholder="Province" onkeyup="filterTable()">
+      </div>
+      <div class="col-md-2">
+        <input type="text" id="filterBranch" class="form-control" 
+               placeholder="Branch" onkeyup="filterTable()">
+      </div>
+      <div class="col-md-2">
+        <input type="text" id="filterGender" class="form-control" 
+               placeholder="Gender" onkeyup="filterTable()">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label mb-0"><strong>Position Category:</strong></label>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio" name="filterPositionCategory" id="filterAll" value="" checked onclick="filterTable()">
+          <label class="form-check-label" for="filterAll">All</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio" name="filterPositionCategory" id="filterSecurity" value="Security" onclick="filterTable()">
+          <label class="form-check-label" for="filterSecurity">Security</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio" name="filterPositionCategory" id="filterCleaning" value="Cleaning" onclick="filterTable()">
+          <label class="form-check-label" for="filterCleaning">Cleaning</label>
+        </div>
+      </div>
+      <div class="col-md-1">
+        <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+          Clear Filters
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Action Buttons -->
+<div class="mb-3 d-flex gap-2">
+  <button type="button" class="btn btn-success" onclick="saveAttendance()">
+    <i class="bi bi-save"></i> Save Attendance
+  </button>
+  <button type="button" class="btn btn-danger" onclick="generatePDF()">
+    <i class="bi bi-file-pdf"></i> Generate PDF Report
+  </button>
+  <a href="{% url 'member_list' %}" class="btn btn-secondary">
+    <i class="bi bi-arrow-left"></i> Back to Members
+  </a>
+  <div class="ms-auto">
+    <strong>Total Active Members: <span id="totalCount">{{ members|length }}</span></strong>
+  </div>
+</div>
+
+<!-- Attendance Table -->
+<div class="table-responsive">
+  <table class="table table-striped table-bordered" id="attendanceTable">
+    <thead class="table-dark">
+      <tr>
+        <th>ETF No</th>
+        <th>Full Name</th>
+        <th>Gender</th>
+        <th>Position Category</th>
+        <th>Nationality</th>
+        <th>NIC No</th>
+        <th>DOB</th>
+        <th>Address</th>
+        <th>Workplace</th>
+        <th>Bank Name</th>
+        <th>Branch No</th>
+        <th>Branch Name</th>
+        <th>Account No</th>
+        <th>Telephone</th>
+        <th>Date Joined</th>
+        <th>Service Years</th>
+        <th>Service Days</th>
+        <th>Leave Dates</th>
+        <th>Comment</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for member in members %}
+      <tr class="member-attendance-row"
+          data-etf="{{ member.etf_no }}"
+          data-fullname="{{ member.fullname }}"
+          data-province="{{ member.province }}"
+          data-branch="{{ member.branch_name }}"
+          data-gender="{{ member.gender }}"
+          data-nic="{{ member.nic_no }}"
+          data-position-category="{{ member.position_category }}"
+          data-workplace="{{ member.workplace }}">
+        <td>{{ member.etf_no }}</td>
+        <td>{{ member.fullname }}</td>
+        <td>{{ member.gender }}</td>
+        <td>{{ member.position_category }}</td>
+        <td>{{ member.nationality }}</td>
+        <td>{{ member.nic_no }}</td>
+        <td>{{ member.date_of_birth|date:"Y-m-d"|default:"N/A" }}</td>
+        <td>{{ member.address }}</td>
+        <td>{{ member.workplace }}</td>
+        <td>{{ member.bank_name|default:"N/A" }}</td>
+        <td>{{ member.salary_bank_branch_no }}</td>
+        <td>{{ member.branch_name|default:"N/A" }}</td>
+        <td>{{ member.acc_no }}</td>
+        <td>{{ member.telephone }}</td>
+        <td>{{ member.date_joined|date:"Y-m-d"|default:"N/A" }}</td>
+        <td>{{ member.calculated_service_years|default:"N/A" }}</td>
+        <td>
+          <input type="number" name="service_days_{{ member.pk }}" 
+                 class="form-control form-control-sm service-days-input" 
+                 data-member-id="{{ member.pk }}"
+                 placeholder="Days" min="0" max="31" style="width: 80px;">
+        </td>
+        <td>
+          <input type="text"
+                 name="leave_date_{{ member.pk }}"
+                 class="form-control form-control-sm leave-date-input"
+                 data-member-id="{{ member.pk }}"
+                 placeholder="Select leave dates">
+        </td>
+        <td>
+          <input type="text" name="comment_{{ member.pk }}" 
+                 class="form-control form-control-sm comment-input" 
+                 data-member-id="{{ member.pk }}"
+                 placeholder="Add comment" style="min-width: 200px;">
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="19" class="text-center text-muted">No active members found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+// Apply global values to all visible rows
+function applyGlobalValues() {
+  const globalServiceDays = document.getElementById('globalServiceDays').value;
+  const globalComment = document.getElementById('globalComment').value;
+  
+  const visibleRows = document.querySelectorAll('.member-attendance-row:not([style*="display: none"])');
+  
+  visibleRows.forEach(row => {
+    if (globalServiceDays) {
+      const serviceDaysInput = row.querySelector('.service-days-input');
+      if (serviceDaysInput) {
+        serviceDaysInput.value = globalServiceDays;
+      }
+    }
+    
+    if (globalComment) {
+      const commentInput = row.querySelector('.comment-input');
+      if (commentInput) {
+        commentInput.value = globalComment;
+      }
+    }
+  });
+  
+  alert('Global values applied to all visible members!');
+}
+
+// Filter table based on search criteria and position category radio
+function filterTable() {
+  const searchValue = document.getElementById('filterSearch').value.toLowerCase();
+  const provinceValue = document.getElementById('filterProvince').value.toLowerCase();
+  const branchValue = document.getElementById('filterBranch').value.toLowerCase();
+  const genderValue = document.getElementById('filterGender').value.toLowerCase();
+  const positionCategoryValue = document.querySelector('input[name="filterPositionCategory"]:checked').value.toLowerCase();
+  
+  const rows = document.querySelectorAll('.member-attendance-row');
+  let visibleCount = 0;
+  
+  rows.forEach(row => {
+    const etf = row.dataset.etf.toLowerCase();
+    const fullname = row.dataset.fullname.toLowerCase();
+    const province = row.dataset.province.toLowerCase();
+    const branch = row.dataset.branch.toLowerCase();
+    const gender = row.dataset.gender.toLowerCase();
+    const positionCategory = row.dataset.positionCategory.toLowerCase();
+    const nic = row.dataset.nic.toLowerCase();
+    
+    const matchesSearch = !searchValue || 
+                         etf.includes(searchValue) || 
+                         fullname.includes(searchValue) || 
+                         nic.includes(searchValue);
+    const matchesProvince = !provinceValue || province.includes(provinceValue);
+    const matchesBranch = !branchValue || branch.includes(branchValue);
+    const matchesGender = !genderValue || gender.includes(genderValue);
+    const matchesPositionCategory = !positionCategoryValue || positionCategory.includes(positionCategoryValue);
+    
+    if (matchesSearch && matchesProvince && matchesBranch && matchesGender && matchesPositionCategory) {
+      row.style.display = '';
+      visibleCount++;
+    } else {
+      row.style.display = 'none';
+    }
+  });
+  
+  document.getElementById('totalCount').textContent = visibleCount;
+}
+
+// Clear all filters
+function clearFilters() {
+  document.getElementById('filterSearch').value = '';
+  document.getElementById('filterProvince').value = '';
+  document.getElementById('filterBranch').value = '';
+  document.getElementById('filterGender').value = '';
+  document.getElementById('filterAll').checked = true; // Reset radio
+  filterTable();
+}
+
+// Save attendance data
+function saveAttendance() {
+  const attendanceMonth = document.getElementById('attendanceMonth').value;
+  
+  if (!attendanceMonth) {
+    alert('Please select a month first!');
+    return;
+  }
+  
+  const attendanceData = [];
+  const rows = document.querySelectorAll('.member-attendance-row');
+  
+  rows.forEach(row => {
+    const memberId = row.querySelector('.service-days-input').dataset.memberId;
+    const serviceDays = row.querySelector('.service-days-input').value;
+    const comment = row.querySelector('.comment-input').value;
+    const leaveDates = row.querySelector('.leave-date-input').value;
+    
+    if (serviceDays || comment || leaveDates) {
+      attendanceData.push({
+        member_id: memberId,
+        service_days: serviceDays || 0,
+        comment: comment || '',
+        leave_dates: leaveDates || ''
+      });
+    }
+  });
+  
+  if (attendanceData.length === 0) {
+    alert('Please enter at least one attendance record!');
+    return;
+  }
+  
+  fetch('{% url "save_attendance" %}', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': '{{ csrf_token }}'
+    },
+    body: JSON.stringify({
+      month: attendanceMonth,
+      attendance_data: attendanceData
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert('Attendance saved successfully!');
+    } else {
+      alert('Error saving attendance: ' + data.error);
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('An error occurred while saving attendance.');
+  });
+}
+
+// Generate PDF Report
+function generatePDF() {
+  const attendanceMonth = document.getElementById('attendanceMonth').value;
+  
+  if (!attendanceMonth) {
+    alert('Please select a month first!');
+    return;
+  }
+  
+  const params = new URLSearchParams({
+    month: attendanceMonth,
+    search: document.getElementById('filterSearch').value,
+    province: document.getElementById('filterProvince').value,
+    branch: document.getElementById('filterBranch').value,
+    gender: document.getElementById('filterGender').value,
+    position_category: document.querySelector('input[name="filterPositionCategory"]:checked').value
+  });
+  
+  window.open('{% url "export_attendance_pdf" %}?' + params.toString(), '_blank');
+}
+</script>
+
+<style>
+.table th {
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+.service-days-input, .comment-input {
+  font-size: 0.9rem;
+}
+</style>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  flatpickr(".leave-date-input", {
+    mode: "multiple",
+    dateFormat: "Y-m-d"
+  });
+});
+</script>
+
+{% endblock %}

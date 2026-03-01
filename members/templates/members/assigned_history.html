@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>Assigned History</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Worker Name</th>
+            <th>Assigned Place</th>
+            <th>Assigned Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for record in history %}
+        <tr>
+            <td>{{ record.member.fullname }}</td>
+            <td>{{ record.assigned_place }}</td>
+            <td>{{ record.assigned_date }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="3">No assignment history found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

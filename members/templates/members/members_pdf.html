@@ -1,0 +1,79 @@
+<!-- templates/members/export_pdf.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Members PDF</title>
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ddd; padding: 6px; vertical-align: top; }
+    th { background: #f7f7f7; }
+    h2 { margin: 0 0 10px 0; }
+    html = render(request, 'members/export_pdf.html', {'members': members}).content.decode()
+  </style>
+</head>
+<body>
+  <h2>Members</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>ETF No</th>
+        <th>Full Name</th>
+        <th>Telephone</th>
+        <th>Gender</th>
+        <th>Nationality</th>
+        <th>NIC No</th>
+        <th>Date of Birth</th>
+        <th>Address</th>
+        <th>Workplace</th>
+        <th>Branch</th>
+        <th>Province</th>
+        <th>Provincial Council</th>
+        <th>Account No</th>
+        <th>Date Joined</th>
+        <th>Date Resigned</th>
+        <th>DS</th>
+        <th>GN</th>
+        <th>Police</th>
+        <th>Marital</th>
+        <th>Spouse</th>
+        <th>Children</th>
+        <th>Education</th>
+        <th>Experience</th>
+        <th>Position</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in members %}
+      <tr>
+        <td>{{ m.etf_no }}</td>
+        <td>{{ m.fullname }}</td>
+        <td>{{ m.telephone }}</td>
+        <td>{{ m.gender }}</td>
+        <td>{{ m.nationality }}</td>
+        <td>{{ m.nic_no }}</td>
+        <td>{{ m.date_of_birth }}</td>
+        <td>{{ m.address }}</td>
+        <td>{{ m.workplace }}</td>
+        <td>{{ m.branch_name }}</td>
+        <td>{{ m.province }}</td>
+        <td>{{ m.provincial_council }}</td>
+        <td>{{ m.acc_no }}</td>
+        <td>{{ m.date_joined }}</td>
+        <td>{{ m.date_resigned }}</td>
+        <td>{{ m.ds_division }}</td>
+        <td>{{ m.gn_division }}</td>
+        <td>{{ m.police_division }}</td>
+        <td>{{ m.marital_status }}</td>
+        <td>{{ m.spouse_name }}</td>
+        <td>{{ m.no_of_children }}</td>
+        <td>{{ m.education_qualifications }}</td>
+        <td>{{ m.experience }}</td>
+        <td>{{ m.position_category }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

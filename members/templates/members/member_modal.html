@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2 class="mb-3">Members</h2>
+
+<!-- Filters -->
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-3">
+    <input type="text" name="q" value="{{ request.GET.q }}" class="form-control" placeholder="Search anything">
+  </div>
+  <div class="col-md-2">
+    <input type="text" name="branch" value="{{ request.GET.branch }}" class="form-control" placeholder="Branch">
+  </div>
+  <div class="col-md-2">
+    <input type="text" name="province" value="{{ request.GET.province }}" class="form-control" placeholder="Province">
+  </div>
+  <div class="col-md-2">
+    <input type="text" name="position" value="{{ request.GET.position }}" class="form-control" placeholder="Position">
+  </div>
+  <div class="col-md-1">
+    <input type="text" name="gender" value="{{ request.GET.gender }}" class="form-control" placeholder="Gender">
+  </div>
+
+  <div class="col-md-2">
+    <input type="text" name="etf_range" value="{{ request.GET.etf_range }}" class="form-control" placeholder="ETF Range e.g. 108-200">
+  </div>
+  <div class="col-md-3">
+    <input type="text" name="etf_list" value="{{ request.GET.etf_list }}" class="form-control" placeholder="ETF List e.g. 109,110,120">
+  </div>
+
+  <div class="col-md-2">
+    <input type="date" name="date_joined_from" value="{{ request.GET.date_joined_from }}" class="form-control">
+  </div>
+  <div class="col-md-2">
+    <input type="date" name="date_joined_to" value="{{ request.GET.date_joined_to }}" class="form-control">
+  </div>
+
+  <div class="col-md-12 d-flex gap-2 mt-2">
+    <button class="btn btn-primary" type="submit">Apply filters</button>
+    <a class="btn btn-outline-secondary" href="{% url 'member_list' %}">Clear</a>
+
+    <a class="btn btn-success ms-auto" href="{% url 'export_members_csv' %}?{{ request.GET.urlencode }}">Export CSV</a>
+    <a class="btn btn-success" href="{% url 'export_members_xlsx' %}?{{ request.GET.urlencode }}">Export XLSX</a>
+    <a class="btn btn-danger" href="{% url 'export_members_pdf' %}?{{ request.GET.urlencode }}">Export PDF</a>
+  </div>
+</form>
+
+<a href="{% url 'member_create' %}" class="btn btn-primary mb-3">Add Member</a>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Photo</th>
+      <th>ETF No</th>
+      <th>Full Name</th>
+      <th>Telephone</th>
+      <th>Bank</th>
+      <th>Age</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for member in members %}
+    <tr class="member-row" style="cursor:pointer;"
+        data-fullname="{{ member.fullname }}"
+        data-etf="{{ member.etf_no }}"
+        data-telephone="{{ member.telephone }}"
+        data-gender="{{ member.gender }}"
+        data-nationality="{{ member.nationality }}"
+        data-nic="{{ member.nic_no }}"
+        data-dob="{{ member.date_of_birth }}"
+        data-age="{{ member.age }}"
+        data-address="{{ member.address }}"
+        data-workplace="{{ member.workplace }}"
+        data-bank="{{ member.branch_name }}"
+        data-branch="{{ member.branch_name }}"
+        data-province="{{ member.province }}"
+        data-council="{{ member.provincial_council }}"
+        data-acc="{{ member.acc_no }}"
+        data-joined="{{ member.date_joined }}"
+        data-resigned="{{ member.date_resigned }}"
+        data-ds="{{ member.ds_division }}"
+        data-gn="{{ member.gn_division }}"
+        data-police="{{ member.police_station }}"
+        data-marital="{{ member.marital_status }}"
+        data-spouse="{{ member.spouse_name }}"
+        data-children="{{ member.no_of_children }}"
+        data-edu="{{ member.education_qualifications }}"
+        data-exp="{{ member.experience }}"
+        data-position="{{ member.position_category }}"
+        data-photo="{% if member.picture %}{{ member.picture.url }}{% endif %}">
+
+      <td>
+        {% if member.picture %}
+          <img src="{{ member.picture.url }}" width="80" height="80" class="img-thumbnail">
+        {% else %}
+          <span class="text-muted">No photo</span>
+        {% endif %}
+      </td>
+      <td>{{ member.etf_no }}</td>
+      <td>{{ member.fullname }}</td>
+      <td>{{ member.telephone }}</td>
+      <td>{{ member.branch_name|default:"-" }}</td>
+      <td>{{ member.age|default:"-" }}</td>
+      <td>
+        <a href="{% url 'member_update' member.pk %}" class="btn btn-sm btn-warning" onclick="event.stopPropagation();">Edit</a>
+        <a href="{% url 'member_delete' member.pk %}" class="btn btn-sm btn-danger" onclick="event.stopPropagation();">Delete</a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="7" class="text-muted">No members found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- Modal -->
+<div class="modal fade" id="memberModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Member Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="text-center mb-3">
+          <img id="modalPhoto" class="img-thumbnail" style="max-width:150px; display:none;">
+        </div>
+
+        <p><strong>ETF No:</strong> <span id="modalEtf"></span></p>
+        <p><strong>Full Name:</strong> <span id="modalFullname"></span></p>
+        <p><strong>Gender:</strong> <span id="modalGender"></span></p>
+        <p><strong>Nationality:</strong> <span id="modalNationality"></span></p>
+        <p><strong>NIC:</strong> <span id="modalNic"></span></p>
+        <p><strong>DOB:</strong> <span id="modalDob"></span></p>
+        <p><strong>Age:</strong> <span id="modalAge"></span></p>
+        <p><strong>Address:</strong> <span id="modalAddress"></span></p>
+        <p><strong>Workplace:</strong> <span id="modalWorkplace"></span></p>
+        <p><strong>Bank:</strong> <span id="modalBank"></span></p>
+        <p><strong>Branch:</strong> <span id="modalBranch"></span></p>
+        <p><strong>Province:</strong> <span id="modalProvince"></span></p>
+        <p><strong>Provincial Council:</strong> <span id="modalCouncil"></span></p>
+        <p><strong>Account No:</strong> <span id="modalAcc"></span></p>
+        <p><strong>Date Joined:</strong> <span id="modalJoined"></span></p>
+        <p><strong>Date Resigned:</strong> <span id="modalResigned"></span></p>
+        <p><strong>DS Division:</strong> <span id="modalDs"></span></p>
+        <p><strong>GN Division:</strong> <span id="modalGn"></span></p>
+        <p><strong>Police Station:</strong> <span id="modalPolice"></span></p>
+        <p><strong>Marital Status:</strong> <span id="modalMarital"></span></p>
+        <p><strong>Spouse:</strong> <span id="modalSpouse"></span></p>
+        <p><strong>Children:</strong> <span id="modalChildren"></span></p>
+        <p><strong>Education:</strong> <span id="modalEdu"></span></p>
+        <p><strong>Experience:</strong> <span id="modalExp"></span></p>
+        <p><strong>Position:</strong> <span id="modalPosition"></span></p>
+        <p><strong>Telephone:</strong> <span id="modalTelephone"></span></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll(".member-row").forEach(row => {
+  row.addEventListener("click", () => {
+
+    const set = (id, value) => document.getElementById(id).innerText = value || "-";
+
+    set("modalEtf", row.dataset.etf);
+    set("modalFullname", row.dataset.fullname);
+    set("modalGender", row.dataset.gender);
+    set("modalNationality", row.dataset.nationality);
+    set("modalNic", row.dataset.nic);
+    set("modalDob", row.dataset.dob);
+    set("modalAge", row.dataset.age);
+    set("modalAddress", row.dataset.address);
+    set("modalWorkplace", row.dataset.workplace);
+    set("modalBank", row.dataset.bank);
+    set("modalBranch", row.dataset.branch);
+    set("modalProvince", row.dataset.province);
+    set("modalCouncil", row.dataset.council);
+    set("modalAcc", row.dataset.acc);
+    set("modalJoined", row.dataset.joined);
+    set("modalResigned", row.dataset.resigned);
+    set("modalDs", row.dataset.ds);
+    set("modalGn", row.dataset.gn);
+    set("modalPolice", row.dataset.police);
+    set("modalMarital", row.dataset.marital);
+    set("modalSpouse", row.dataset.spouse);
+    set("modalChildren", row.dataset.children);
+    set("modalEdu", row.dataset.edu);
+    set("modalExp", row.dataset.exp);
+    set("modalPosition", row.dataset.position);
+    set("modalTelephone", row.dataset.telephone);
+
+    const photo = document.getElementById("modalPhoto");
+    if (row.dataset.photo) {
+      photo.src = row.dataset.photo;
+      photo.style.display = "block";
+    } else {
+      photo.style.display = "none";
+    }
+
+    new bootstrap.Modal(document.getElementById("memberModal")).show();
+  });
+});
+</script>
+
+{% endblock %}

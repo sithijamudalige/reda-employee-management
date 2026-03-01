@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Members PDF Export</title>
+  <style>
+    @page {
+      size: A3 landscape;
+      margin: 1cm;
+    }
+    body { font-family: Arial, sans-serif; font-size: 9px; }
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    th, td { border: 1px solid #ddd; padding: 3px; vertical-align: top; }
+    th { background: #f7f7f7; }
+    td { word-wrap: break-word; white-space: normal; }
+    h2 { margin: 0 0 10px 0; }
+  </style>
+</head>
+<body>
+  <h2>Members</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>ETF No</th>
+        <th>Full Name</th>
+        <th>Gender</th>
+        <th>Nationality</th>
+        <th>NIC No</th>
+        <th>Date of Birth</th>
+        <th>Address</th>
+        <th>Workplace</th>
+        <th>Salary Bank Branch No</th>
+        <th>Branch Name</th>
+        <th>Province</th>
+        <th>Provincial Council</th>
+        <th>Account No</th>
+        <th>Telephone</th>
+        <th>Date Joined</th>
+        <th>Date Resigned</th>
+        <th>DS Division</th>
+        <th>GN Division</th>
+        <th>Police Station</th>
+        <th>Marital Status</th>
+        <th>Spouse Name</th>
+        <th>No. of Children</th>
+        <th>Education</th>
+        <th>Experience</th>
+        <th>Position Category</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in members %}
+      <tr>
+        <td>{{ m.etf_no }}</td>
+        <td>{{ m.fullname }}</td>
+        <td>{{ m.gender }}</td>
+        <td>{{ m.nationality }}</td>
+        <td>{{ m.nic_no }}</td>
+        <td>{{ m.date_of_birth }}</td>
+        <td>{{ m.address }}</td>
+        <td>{{ m.workplace }}</td>
+        <td>{{ m.salary_bank_branch_no }}</td>
+        <td>{{ m.branch_name }}</td>
+        <td>{{ m.province }}</td>
+        <td>{{ m.provincial_council }}</td>
+        <td>{{ m.acc_no }}</td>
+        <td>{{ m.telephone }}</td>
+        <td>{{ m.date_joined }}</td>
+        <td>{{ m.date_resigned }}</td>
+        <td>{{ m.ds_division|default:"-" }}</td>
+        <td>{{ m.gn_division|default:"-" }}</td>
+        <td>{{ m.police_station|default:"-" }}</td>
+        <td>{{ m.marital_status }}</td>
+        <td>{{ m.spouse_name }}</td>
+        <td>{{ m.no_of_children }}</td>
+        <td>{{ m.education_qualifications }}</td>
+        <td>{{ m.experience }}</td>
+        <td>{{ m.position_category }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

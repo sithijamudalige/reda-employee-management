@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Attendance Report - {{ month }}</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 1cm;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 9pt;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 18pt;
+            color: #333;
+        }
+        
+        .header p {
+            margin: 5px 0;
+            color: #666;
+        }
+
+        .filters-info {
+            background-color: #f8f9fa;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #007bff;
+            font-size: 8pt;
+        }
+
+        .filters-info strong {
+            color: #007bff;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 6px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #343a40;
+            color: white;
+            font-weight: bold;
+            font-size: 8pt;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 8pt;
+            color: #666;
+        }
+        
+        .leave-dates {
+            font-size: 7pt;
+            color: #d9534f;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Attendance Report</h1>
+        <p><strong>Month:</strong> {{ month }}</p>
+        <p><strong>Generated on:</strong> {{ generated_date|date:"F d, Y h:i A" }}</p>
+        <p><strong>Total Members:</strong> {{ members_data|length }}</p>
+    </div>
+
+    <!-- ✅ Show Applied Filters -->
+    {% if filters_applied.search or filters_applied.province or filters_applied.branch or filters_applied.gender or filters_applied.position_category %}
+    <div class="filters-info">
+        <strong>Filters Applied:</strong>
+        {% if filters_applied.search %} Search: "{{ filters_applied.search }}" |{% endif %}
+        {% if filters_applied.province %} Province: {{ filters_applied.province }} |{% endif %}
+        {% if filters_applied.branch %} Branch: {{ filters_applied.branch }} |{% endif %}
+        {% if filters_applied.gender %} Gender: {{ filters_applied.gender }} |{% endif %}
+        {% if filters_applied.position_category %} Position: {{ filters_applied.position_category }}{% endif %}
+    </div>
+    {% endif %}
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ETF No</th>
+                <th>Full Name</th>
+                <th>Gender</th>
+                <th>Position</th>
+                <th>NIC No</th>
+                <th>Workplace</th>
+                <th>Branch Name</th>
+                <th>Telephone</th>
+                <th>Service Days</th>
+                <th>Leave Dates</th>
+                <th>Comment</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in members_data %}
+            <tr>
+                <td>{{ item.member.etf_no }}</td>
+                <td>{{ item.member.fullname }}</td>
+                <td>{{ item.member.gender }}</td>
+                <td>{{ item.member.position_category }}</td>
+                <td>{{ item.member.nic_no }}</td>
+                <td>{{ item.member.workplace }}</td>
+                <td>{{ item.member.branch_name|default:"N/A" }}</td>
+                <td>{{ item.member.telephone }}</td>
+                <td style="text-align: center;">{{ item.service_days }}</td>
+                <td class="leave-dates">
+                    {% if item.leave_dates %}
+                        {% for date in item.leave_dates %}
+                            {{ date }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>{{ item.comment|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="11" style="text-align: center;">No records found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="footer">
+        <p>This is a system-generated report. No signature is required.</p>
+    </div>
+</body>
+</html>

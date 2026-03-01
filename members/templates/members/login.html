@@ -1,0 +1,392 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  .login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e8ba3 100%);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Animated background circles */
+  .login-container::before {
+    content: '';
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    top: -200px;
+    right: -200px;
+    animation: float 15s infinite ease-in-out;
+  }
+
+  .login-container::after {
+    content: '';
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+    bottom: -150px;
+    left: -150px;
+    animation: float 20s infinite ease-in-out reverse;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-30px); }
+  }
+
+  .login-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 30px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+    padding: 60px 50px;
+    max-width: 450px;
+    width: 100%;
+    position: relative;
+    z-index: 10;
+    text-align: center;
+  }
+
+  .logo-container {
+    margin-bottom: 30px;
+    animation: fadeInDown 1s ease;
+  }
+
+  .logo-container img {
+    width: 120px;
+    height: auto;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 4px 10px rgba(30, 60, 114, 0.3));
+  }
+
+  .welcome-text {
+    margin-bottom: 40px;
+    animation: fadeInUp 1s ease 0.2s both;
+  }
+
+  .welcome-text h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #1e3c72;
+    margin-bottom: 10px;
+    letter-spacing: -0.5px;
+  }
+
+  .welcome-text p {
+    font-size: 1.1rem;
+    color: #5a6c8f;
+    font-weight: 400;
+  }
+
+  @keyframes fadeInDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .login-form {
+    animation: fadeInUp 1s ease 0.4s both;
+  }
+
+  .form-group {
+    margin-bottom: 25px;
+    text-align: left;
+  }
+
+  .form-label {
+    display: block;
+    font-weight: 600;
+    color: #2d3e50;
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 16px 20px;
+    border: 2px solid #e0e7f1;
+    border-radius: 15px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #f8fafc;
+    color: #2d3e50;
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: #2a5298;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(42, 82, 152, 0.1);
+  }
+
+  .form-input::placeholder {
+    color: #a8b4c7;
+  }
+
+  .password-wrapper {
+    position: relative;
+  }
+
+  .toggle-password {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #7e8ba3;
+    cursor: pointer;
+    font-size: 1.3rem;
+    padding: 5px;
+    transition: color 0.3s ease;
+  }
+
+  .toggle-password:hover {
+    color: #2a5298;
+  }
+
+  .btn-login {
+    width: 100%;
+    padding: 18px;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+    border: none;
+    border-radius: 15px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(30, 60, 114, 0.3);
+    margin-top: 10px;
+    letter-spacing: 0.5px;
+  }
+
+  .btn-login:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(30, 60, 114, 0.5);
+  }
+
+  .btn-login:active {
+    transform: translateY(-1px);
+  }
+
+  .alert-messages {
+    margin-bottom: 25px;
+    animation: fadeInUp 0.5s ease;
+  }
+
+  .alert {
+    border-radius: 12px;
+    padding: 15px 20px;
+    margin-bottom: 15px;
+    border: none;
+    font-size: 0.95rem;
+  }
+
+  .alert-danger {
+    background-color: #fee;
+    color: #c33;
+    border-left: 4px solid #c33;
+  }
+
+  .alert-success {
+    background-color: #efe;
+    color: #3c3;
+    border-left: 4px solid #3c3;
+  }
+
+  .divider {
+    margin: 30px 0 20px;
+    text-align: center;
+    position: relative;
+    color: #a8b4c7;
+    font-size: 0.85rem;
+  }
+
+  .divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 45%;
+    height: 1px;
+    background: #e0e7f1;
+  }
+
+  .divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 0;
+    width: 45%;
+    height: 1px;
+    background: #e0e7f1;
+  }
+
+  .footer-text {
+    color: #7e8ba3;
+    font-size: 0.9rem;
+    margin-top: 10px;
+  }
+
+  .footer-text a {
+    color: #2a5298;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .footer-text a:hover {
+    text-decoration: underline;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .login-card {
+      padding: 40px 30px;
+      margin: 20px;
+    }
+
+    .welcome-text h1 {
+      font-size: 1.8rem;
+    }
+
+    .welcome-text p {
+      font-size: 1rem;
+    }
+
+    .logo-container img {
+      width: 100px;
+    }
+  }
+</style>
+
+<div class="login-container">
+  <div class="login-card">
+    <!-- Logo & Welcome Section -->
+    <div class="logo-container">
+      <img src="/media/reda-logo.png" alt="REDA Logo" onerror="this.style.display='none';">
+    </div>
+
+    <div class="welcome-text">
+      <h1>Welcome to REDA</h1>
+      <p>Employee Management System</p>
+    </div>
+
+    <!-- Django Messages -->
+    {% if messages %}
+      <div class="alert-messages">
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}" role="alert">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <!-- Login Form -->
+    <form method="post" class="login-form">
+      {% csrf_token %}
+      
+      <div class="form-group">
+        <label for="username" class="form-label">Username</label>
+        <input 
+          type="text" 
+          name="username" 
+          id="username" 
+          class="form-input"
+          placeholder="Enter your username"
+          required
+          autofocus
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="password" class="form-label">Password</label>
+        <div class="password-wrapper">
+          <input 
+            type="password" 
+            name="password" 
+            id="password" 
+            class="form-input"
+            placeholder="Enter your password"
+            required
+          >
+          <button type="button" class="toggle-password" onclick="togglePassword()">
+            👁️
+          </button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-login">
+        Login to Dashboard
+      </button>
+
+      <div class="divider">Secure Access</div>
+
+      <p class="footer-text">
+        Need assistance? <a href="#">Contact Support</a>
+      </p>
+    </form>
+  </div>
+</div>
+
+<script>
+function togglePassword() {
+  const passwordInput = document.getElementById('password');
+  const toggleBtn = document.querySelector('.toggle-password');
+  
+  if (passwordInput.type === 'password') {
+    passwordInput.type = 'text';
+    toggleBtn.textContent = '🙈';
+  } else {
+    passwordInput.type = 'password';
+    toggleBtn.textContent = '👁️';
+  }
+}
+
+// Auto-hide alerts after 5 seconds
+document.addEventListener('DOMContentLoaded', function() {
+  const alerts = document.querySelectorAll('.alert');
+  alerts.forEach(alert => {
+    setTimeout(() => {
+      alert.style.opacity = '0';
+      alert.style.transition = 'opacity 0.5s ease';
+      setTimeout(() => alert.remove(), 500);
+    }, 5000);
+  });
+});
+</script>
+
+{% endblock %}
